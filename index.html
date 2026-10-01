@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <script>
+    // 핸드폰에서는 컴퓨터와 같은 화면(가로 1280px)을 폰 화면 폭에 맞게 줄여서 보여 줘요.
+    // 어떤 폰 브라우저(카카오톡 안 브라우저 등)는 처음 읽은 화면 설정만 쓰기 때문에, 처음부터 핸드폰용 설정을 넣어요.
+    (function () {
+      var PAGE = 1280;
+      var small = Math.min(screen.width, screen.height) < 600;
+      var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      var phone = small && touch;
+      document.write('<meta name="viewport" id="vp" content="' + (phone ? 'width=' + PAGE : 'width=device-width, initial-scale=1') + '">');
+      if (!phone) return;
+      document.documentElement.className += ' phone';
+      // 화면이 뜬 뒤 '실제로 보이는 폭'을 재서 딱 맞춰요.
+      // (가로로 들면 카메라 구멍·버튼 막대 때문에 보이는 폭이 화면 크기보다 좁은 폰이 있어요)
+      function refit() {
+        var vv = window.visualViewport;
+        if (!vv) return;
+        var shown = vv.width * vv.scale;           // 지금 보이는 폭
+        if (Math.abs(vv.width - PAGE) < 2) return;  // 이미 딱 맞아요
+        var s = Math.min(1, shown / PAGE).toFixed(4);
+        document.getElementById('vp').setAttribute('content', 'width=' + PAGE + ', initial-scale=' + s);
+      }
+      window.addEventListener('load', function () { setTimeout(refit, 50); });
+      window.addEventListener('orientationchange', function () { setTimeout(refit, 300); });
+    })();
+  </script>
+  <title>도서관 탐험대</title>
+  <meta name="author" content="DSJ">
+  <meta name="copyright" content="© 2026 DSJ. All rights reserved.">
+  <meta name="description" content="가상의 학교도서관을 탐험하며 검색, 청구기호, 분류, 서가 탐색, 대출·반납을 익히는 도서관 이용교육 프로그램">
+  <!-- 링크를 공유할 때 보이는 미리보기 (카카오톡·문자·SNS) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="도서관 탐험대">
+  <meta property="og:title" content="도서관 탐험대 · 도서관 이용교육">
+  <meta property="og:description" content="가상의 학교도서관을 돌아다니며 책 찾기부터 대출까지 직접 해 봐요! 도서 검색 · 청구기호 · 서가 찾기 · 대출·반납">
+  <meta property="og:url" content="https://dsj-library.vercel.app/">
+  <meta property="og:image" content="https://dsj-library.vercel.app/og.png">
+  <meta property="og:image:width" content="2400">
+  <meta property="og:image:height" content="1260">
+  <meta property="og:image:alt" content="도서관 탐험대 - 입체로 그린 학교도서관과 KDC 분류 서가">
+  <meta property="og:locale" content="ko_KR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="도서관 탐험대 · 도서관 이용교육">
+  <meta name="twitter:description" content="가상의 학교도서관을 돌아다니며 책 찾기부터 대출까지 직접 해 봐요!">
+  <meta name="twitter:image" content="https://dsj-library.vercel.app/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app"></div>
+  <footer class="site-footer">
+    <span>도서관 탐험대 · 만든 사람 <b>DSJ</b></span>
+    <span class="sf-copy">© 2026 DSJ. All rights reserved.</span>
+  </footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="sr-live" class="sr" aria-live="polite"></div>
+  <!-- 핸드폰을 세로로 들었을 때: 가로로 돌리라는 안내 -->
+  <div class="rotate-hint" id="rotate-hint" role="dialog" aria-modal="true" aria-labelledby="rotate-h">
+    <div class="rh-phone" aria-hidden="true"><span>📚</span></div>
+    <h2 id="rotate-h">핸드폰을 가로로 돌려 주세요</h2>
+    <p>도서관 탐험대는 가로 화면에서 컴퓨터처럼 볼 수 있어요.</p>
+    <button type="button" class="btn primary big" id="rh-full">⛶ 전체 화면 가로로 보기</button>
+    <button type="button" class="btn" id="rh-skip">세로로 계속하기</button>
+    <p class="rh-note">화면이 돌아가지 않으면 핸드폰의 ‘화면 자동 회전’을 켜 주세요.</p>
+  </div>
+  <script>
+    (function () {
+      var hint = document.getElementById('rotate-hint');
+      document.getElementById('rh-skip').onclick = function () { hint.classList.add('off'); };
+      document.getElementById('rh-full').onclick = function () {
+        var el = document.documentElement;
+        var go = el.requestFullscreen || el.webkitRequestFullscreen;
+        var p = go ? go.call(el) : null;
+        var lock = function () { try { screen.orientation.lock('landscape').catch(function () {}); } catch (e) { /* 지원하지 않는 폰 */ } };
+        if (p && p.then) p.then(lock).catch(function () {}); else lock();
+      };
+    })();
+  </script>
+  <noscript><p style="padding:24px;font-size:20px">도서관 탐험대를 이용하려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+
+  <!-- 콘텐츠 데이터 (교사가 수정할 수 있어요) -->
+  <script src="data/classifications.js"></script>
+  <script src="data/books.js"></script>
+  <script src="data/missions.js"></script>
+  <!-- 프로그램 -->
+  <script src="js/app.js"></script>
+</body>
+</html>
